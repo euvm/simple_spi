@@ -1,0 +1,7 @@
+*/a.out
+/sim/tst_bench_top.vcd
+/sim/spi.o
+/sim/spi.vpi
+/sim/spi.vvp
+*/*~
+*/*.vcd
