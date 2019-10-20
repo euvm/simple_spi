@@ -37,7 +37,7 @@ class apb_rw: uvm_sequence_item
 
 class apb_monitor: uvm_monitor
 {
-  // spi_seq_item spi_item;
+  spi_seq_item spi_item;
   
   @UVM_BUILD {
     uvm_analysis_imp!(write) apb_analysis;
@@ -303,7 +303,7 @@ class spi_agent: uvm_agent
   }
 
   mixin uvm_component_utils;
-   
+
   this(string name, uvm_component parent = null) {
     super(name, parent);
   }
@@ -335,18 +335,34 @@ class spi_scoreboard: uvm_scoreboard
 {
   mixin uvm_component_utils;
 
+  apb_rw       apb_item;
+  spi_seq_item spi_item;
+
   @UVM_BUILD {
     uvm_analysis_imp!(write_spi) spi_analysis;
     uvm_analysis_imp!(write_apb) apb_analysis;
   }
 
   void write_spi(spi_seq_item item) {
-    uvm_info("APB TRANSMIT", format("%x", item.data), UVM_DEBUG);
+    uvm_info("SPI TRANSMIT", format("%x", item.data), UVM_DEBUG);
+    spi_item = item;
+    compare_spi_to_apb();
   }
 
   void write_apb(apb_rw item) {
     if (item.kind == kind_e.WRITE && item.addr == 0x02) {
       uvm_info("APB TRANSMIT", format("%x", item.data), UVM_DEBUG);
+      apb_item = item;
+    }
+  }
+
+  void compare_spi_to_apb() {
+    if (spi_item.data == apb_item.data) {
+      uvm_info("SPI MATCHED", format("%x", spi_item.data), UVM_DEBUG);
+    } else {
+      uvm_info("SPI", format("%x", spi_item.data), UVM_DEBUG);
+      uvm_info("APB", format("%x", apb_item.data), UVM_DEBUG);
+      uvm_error("SPI MISMATCHED", "Scoreboard received unmatched response between SPI & APB");
     }
   }
   
@@ -467,6 +483,7 @@ void initializeESDL() {
 
   auto test = new uvm_tb;
   test.multicore(0, 4, 0);
+
   test.elaborate("test");
   test.set_seed(1);
   test.setVpiMode();
