@@ -334,6 +334,8 @@ class spi_bit_snooper(string vpi_func):
 class spi_scoreboard: uvm_scoreboard
 {
   mixin uvm_component_utils;
+  spi_seq_item spi_temp_item;
+  apb_rw apb_temp_item;
 
   @UVM_BUILD {
     uvm_analysis_imp!(write_spi) spi_analysis;
@@ -341,12 +343,24 @@ class spi_scoreboard: uvm_scoreboard
   }
 
   void write_spi(spi_seq_item item) {
-    uvm_info("APB TRANSMIT", format("%x", item.data), UVM_DEBUG);
+    uvm_info("SPI TRANSMIT", format("%x", item.data), UVM_DEBUG);
+    spi_temp_item = item;
+    checker();
   }
 
   void write_apb(apb_rw item) {
     if (item.kind == kind_e.WRITE && item.addr == 0x02) {
       uvm_info("APB TRANSMIT", format("%x", item.data), UVM_DEBUG);
+      apb_temp_item = item;
+    }
+  }
+
+  void checker(){
+    if(apb_temp_item.data == spi_temp_item.data){
+      uvm_info("[SPI MATCHED]", format("%x", spi_temp_item.data), UVM_DEBUG);
+    }
+    else{
+      uvm_info("[SPI MISMATCHED", format("%x", apb_temp_item.data), UVM_DEBUG);
     }
   }
   
