@@ -347,6 +347,8 @@ class spi_scoreboard: uvm_scoreboard
     uvm_info("SPI TRANSMIT", format("%x", item.data), UVM_DEBUG);
     spi_item = item;
     compare_spi_to_apb();
+    ulong sim_time = getSimTime().getVal();
+    uvm_info("SIMULATION TIME", format("%s", sim_time), UVM_DEBUG);
   }
 
   void write_apb(apb_rw item) {
@@ -476,6 +478,41 @@ class random_test: uvm_test
     phase.drop_objection(this, "avl_test");
   }
 }
+
+//class random_test_2: uvm_test
+//{
+//  mixin uvm_component_utils;
+//
+//  this(string name, uvm_component parent) {
+//    super(name, parent);
+//  }
+//
+//  @UVM_BUILD {
+//    spi_env env;
+//  }
+//
+//  override void run_phase(uvm_phase  phase) {
+//    apb_rw item;
+//    apb_seq confiq_seq;
+//    apb_mosi_seq wr_seq;
+//    phase.raise_objection(this, "avl_test");
+//    // phase.get_objection.set_drain_time(this, 1.usec);
+//    confiq_seq = apb_seq.type_id.create("apb_seq");
+//    confiq_seq.set_write(0, 0b01010000);
+//    confiq_seq.sequencer = env.parallel_agent.sequencer;
+//    // confiq_seq.randomize();
+//    confiq_seq.start(env.parallel_agent.sequencer);
+//    for (size_t i=0; i != 10; ++i) {
+//      wr_seq = apb_mosi_seq.type_id.create("apb_seq");
+//      wr_seq.randomize();
+//      wr_seq.sequencer = env.parallel_agent.sequencer;
+//      // wr_seq.randomize();
+//      wr_seq.start(env.parallel_agent.sequencer);
+//      wait(100.nsec);
+//    }
+//    phase.drop_objection(this, "avl_test");
+//  }
+//}
 
 
 void initializeESDL() {
